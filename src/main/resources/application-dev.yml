@@ -1,3 +1,4 @@
+
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5433/alfc
@@ -9,6 +10,11 @@ spring:
     show-sql: true
     hibernate:
       ddl-auto: update
+
+app:
+  admin-token: dev-admin-token
+  jwt-secret: dev-jwt-secret-please-change-me-this-must-be-at-least-32-bytes-long
+  jwt-ttl-days: 30
 
 logging:
   level:

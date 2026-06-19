@@ -19,7 +19,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Event extends BaseEntity {
+public class
+Event extends BaseEntity {
 
     @Column(nullable = false, length = 200)
     private String title;
