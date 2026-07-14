@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16
+    # Reuses the data volume that the old standalone `alfc-pg` container created,
+    # so all existing data is preserved. (These POSTGRES_* vars only take effect
+    # on a *fresh* volume; here they just document the existing credentials.)
+    environment:
+      POSTGRES_USER: alfc
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: alfc
+    volumes:
+      - alfc-pg-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"          # keeps your dev-profile (localhost:5433) working
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U alfc -d alfc"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      # `update` is additive (never drops) — safe against the existing schema.
+      # Switch to `validate` once you're sure the entity mappings match.
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      DATABASE_URL: jdbc:postgresql://db:5432/alfc
+      DATABASE_USERNAME: alfc
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      ADMIN_TOKEN: ${ADMIN_TOKEN}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_TTL_DAYS: 30
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY}
+      YOUTUBE_CHANNEL_ID: UCZDEZVtJAf93Hj08oB08Gug
+
+volumes:
+  # The pre-existing volume, created outside compose. `external: true` means
+  # compose uses it as-is and will NOT delete it on `docker compose down -v`.
+  alfc-pg-data:
+    external: true
